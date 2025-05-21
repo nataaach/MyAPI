@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Погода в Києві</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #e6f2ff;
+    }
+    #weather {
+      font-size: 1.2em;
+      margin-top: 20px;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    .error {
+      color: red;
+    }
+    img {
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Поточна погода в Києві</h1>
+  <div id="weather">Завантаження...</div>
+
+  <script>
+    fetch('https://api.openweathermap.org/data/2.5/weather?q=Kyiv&appid=aa27d5a578c27b240891c21d6d0e5d94&units=metric&lang=ua')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.cod && data.cod !== 200) {
+          throw new Error(`API error: ${data.message}`);
+        }
+        if (!data.main || data.main.temp === undefined) {
+          throw new Error('Invalid weather data structure');
+        }
+
+        const tempCelsius = Math.round(data.main.temp);
+        const description = data.weather[0].description;
+        const humidity = data.main.humidity;
+        const pressure = data.main.pressure;
+        const windSpeed = data.wind.speed;
+        const icon = data.weather[0].icon;
+        const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+
+        document.getElementById('weather').innerHTML = `
+          <p><strong>Температура:</strong> ${tempCelsius}°C</p>
+          <p><strong>Стан:</strong> ${description} <img src="${iconUrl}" alt="icon"></p>
+          <p><strong>Вологість:</strong> ${humidity}%</p>
+          <p><strong>Тиск:</strong> ${pressure} гПа</p>
+          <p><strong>Вітер:</strong> ${windSpeed} м/с</p>
+        `;
+      })
+      .catch(error => {
+        document.getElementById('weather').innerHTML = `<span class="error">Сталася помилка: ${error.message}</span>`;
+      });
+  </script>
+
+</body>
+</html>
